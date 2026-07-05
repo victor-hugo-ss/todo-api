@@ -8,6 +8,7 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  URL_FRONTEND: z.string().url(),
 });
 
 const parsed = envSchema.safeParse(process.env);

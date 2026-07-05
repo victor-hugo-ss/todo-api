@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import cors from "@fastify/cors";
 import fastifyJwt from "@fastify/jwt";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
@@ -15,6 +16,10 @@ import { errorHandler } from "./shared/middlewares/error.handler.js";
 export function buildApp() {
   const app = Fastify({ logger: true });
 
+  app.register(cors, {
+    origin: env.URL_FRONTEND,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  });
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
@@ -42,6 +47,10 @@ export function buildApp() {
   app.register(fastifyJwt, { secret: env.JWT_SECRET });
 
   app.setErrorHandler(errorHandler);
+
+  app.get("/health", () => {
+    return { status: "ok" };
+  });
 
   app.register(usersRoutes);
   app.register(tasksRoutes);

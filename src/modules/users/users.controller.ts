@@ -2,12 +2,26 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import type { CreateUserInput, LoginInput } from "./users.schema.js";
 import * as usersService from "./users.service.js";
 
-export async function createUser(
-  request: FastifyRequest<{ Body: CreateUserInput }>,
-  reply: FastifyReply,
+function generateToken(
+  app: FastifyInstance,
+  user: { id: string; name: string; email: string },
 ) {
-  const user = await usersService.CreateUser(request.body);
-  return reply.status(201).send(user);
+  return app.jwt.sign(
+    { name: user.name, email: user.email },
+    { sub: user.id, expiresIn: "7d" },
+  );
+}
+
+export function makeCreateUserController(app: FastifyInstance) {
+  return async function createUser(
+    request: FastifyRequest<{ Body: CreateUserInput }>,
+    reply: FastifyReply,
+  ) {
+    const user = await usersService.CreateUser(request.body);
+    const token = generateToken(app, user);
+
+    return reply.status(201).send({ ...user, token });
+  };
 }
 
 export function makeLoginController(app: FastifyInstance) {
@@ -16,11 +30,7 @@ export function makeLoginController(app: FastifyInstance) {
     reply: FastifyReply,
   ) {
     const user = await usersService.login(request.body);
-
-    const token = app.jwt.sign(
-      { name: user.name, email: user.email },
-      { sub: user.id, expiresIn: "7d" },
-    );
+    const token = generateToken(app, user);
 
     return reply.send({ token });
   };

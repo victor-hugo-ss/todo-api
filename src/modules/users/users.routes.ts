@@ -13,7 +13,7 @@ export async function usersRoutes(app: FastifyInstance) {
   router.post(
     "/users",
     { schema: createUserSchema },
-    usersController.createUser,
+    usersController.makeCreateUserController(app),
   );
   router.post(
     "/sessions",

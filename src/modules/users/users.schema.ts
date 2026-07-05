@@ -14,6 +14,7 @@ export const createUserSchema = {
       name: z.string(),
       email: z.string(),
       createdAt: z.date(),
+      token: z.string(),
     }),
   },
 };
